@@ -36,15 +36,20 @@
     state: present
 
 - name: Check for supplied tarsnap key
+  become: no
   local_action:
     module: stat
-    path: "files/{{ ansible_hostname }}.key"
+    path: "files/tarsnap/{{ ansible_fqdn }}.key"
   register: local_key
   ignore_errors: true
 
+- name: Check local_key
+  debug:
+    msg: "Check: {{ local_key.stat.exists }}"
+
 - name: Generate tarsnap key and register host
   expect:
-    command: tarsnap-keygen --keyfile {{ backup__tarsnap_keyfile }} --user {{ backup__tarsnap_username }} --machine {{ ansible_hostname }}
+    command: tarsnap-keygen --keyfile {{ backup__tarsnap_keyfile }} --user {{ backup__tarsnap_username }} --machine {{ ansible_fqdn }}
     responses:
       password: "{{ backup__tarsnap_password }}"
     creates: "{{ backup__tarsnap_keyfile }}"
@@ -58,7 +63,7 @@
 
 - name: Copy supplied tarsnap key
   copy:
-    src: "files/{{ ansible_hostname }}.key"
+    src: "files/tarsnap/{{ ansible_fqdn }}.key"
     dest: "{{ backup__tarsnap_keyfile }}"
   when: local_key.stat.exists
 
@@ -76,31 +81,25 @@
   # isn't a valid one
   changed_when: false
 
-- name: Install tarsnapper
-  pip:
-    name: tarsnapper
-    state: present
-
-- name: Copy tarsnapper config file
-  template:
-    src: templates/tarsnapper.yml.j2
-    dest: "{{ backup__tarsnapper_config_file }}"
-    mode: 0600
-    owner: root
-    group: root
-
-- name: Create tarsnapper log file
+- name: Install acts
   copy:
-    dest: "{{ backup__tarsnapper_log_file }}"
-    content: ''
-    force: no
+    src: "files/acts"
+    dest: "/usr/local/bin/acts"
+    mode: 0744
+    owner: root
+    group: root
+
+- name: Copy acts config file
+  template:
+    src: templates/acts.conf.j2
+    dest: "{{ backup__acts_config_file }}"
     mode: 0600
     owner: root
     group: root
 
-- name: Get path to tarsnapper command
-  command: 'which tarsnapper'
-  register: tarsnapper_full_path
+- name: Get path to acts command
+  command: 'which acts'
+  register: acts_full_path
   changed_when: false
 
 - name: Install cron
@@ -111,7 +110,7 @@
 - name: Add backup task to cron
   cron:
     name: Backup to tarsnap
-    job: "{{ tarsnapper_full_path.stdout }} -c {{ backup__tarsnapper_config_file }} make >> /var/log/tarsnapper.log 2>&1"
+    job: "{{ acts_full_path.stdout }} -c {{ backup__acts_config_file }} make >> /var/log/acts.log 2>&1"
     minute: "{{ backup__cron_minute }}"
     hour: "{{ backup__cron_hour }}"
     dom: "{{ backup__cron_dom }}"

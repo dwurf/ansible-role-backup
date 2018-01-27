@@ -13,6 +13,6 @@ galaxy_info:
   galaxy_tags:
     - backup
     - tarsnap
-    - tarsnapper
+    - acts
 
 dependencies: []
