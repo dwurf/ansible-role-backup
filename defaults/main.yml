@@ -1,5 +1,5 @@
 ---
-backup__cron_minute: '#28'
+backup__cron_minute: '28'
 backup__cron_hour: 3
 backup__cron_dom: '*'
 backup__cron_month: '*'
