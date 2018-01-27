@@ -57,6 +57,10 @@
   # the tarsnap key file in the test environment isn't a valid one
   when: not local_key.stat.exists and backup__env != 'test'
 
+- name: Which key will be copied?
+  debug:
+     msg: "copying files/tarsnap/{{ ansible_fqdn }}.key"
+
 - name: Copy supplied tarsnap key
   copy:
     src: "files/tarsnap/{{ ansible_fqdn }}.key"
