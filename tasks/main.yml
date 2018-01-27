@@ -59,7 +59,7 @@
 
 - name: Which key will be copied?
   debug:
-     msg: "copying files/tarsnap/{{ ansible_fqdn }}.key"
+    msg: "copying files/tarsnap/{{ ansible_fqdn }}.key"
 
 - name: Copy supplied tarsnap key
   copy:
