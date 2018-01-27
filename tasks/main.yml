@@ -43,10 +43,6 @@
   register: local_key
   ignore_errors: true
 
-- name: Check local_key
-  debug:
-    msg: "Check: {{ local_key.stat.exists }}"
-
 - name: Generate tarsnap key and register host
   expect:
     command: tarsnap-keygen --keyfile {{ backup__tarsnap_keyfile }} --user {{ backup__tarsnap_username }} --machine {{ ansible_fqdn }}
